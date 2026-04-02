@@ -1,5 +1,4 @@
-````md
-# MAL Rater Stats
+# Anime-Recommender-5.0
 
 A local anime recommendation web app with user registration, email verification, and genre-based discovery.
 
@@ -32,6 +31,8 @@ A built-in admin account is available for local testing:
 - Dependencies from `requirements.txt` or `pyproject.toml`
 
 ## Quick Start
+
+## Starter script recommended for easy install (see down bellow a bit)
 
 ### 1) Copy environment variables
 
@@ -81,7 +82,7 @@ If the browser does not open automatically, visit:
 http://localhost:8080
 ```
 
-## Helper Script
+## Starter Script
 
 The `start.py` script handles common local development tasks.
 
@@ -163,5 +164,3 @@ If `anime_database.json.gz` exists, it is extracted automatically during setup.
 
 This project is licensed under the MIT License.
 
-```
-```
