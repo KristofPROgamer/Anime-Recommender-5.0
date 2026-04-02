@@ -1,0 +1,9 @@
+{
+    "admin": {
+        "password": "scrypt:32768:8:1$wnkkZ3s4yvFj9p0I$77236798394260213203d8920aab1d43e7e782db90103d6d6934dc79e6fbc03e36f81eec5dd115d5891478078bc7276b3a89188444821b239fc31f33f60d9c66",
+        "mal_user": "",
+        "mal_api": "",
+        "verified": true,
+        "token": "ad02777a-24ae-4bc6-960f-6ab287558581"
+    }
+}
