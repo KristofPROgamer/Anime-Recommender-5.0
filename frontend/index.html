@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anime Recommender 5.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="header-bar">
+        <h1>Anime Recommender</h1>
+        <div class="header-actions">
+            <span id="page-user-status" class="status-pill">Not logged in</span>
+            <button class="btn btn-secondary" onclick="toggleModal(true)">Account</button>
+        </div>
+    </div>
+
+    <svg id="line-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50;"></svg>
+
+    <div class="container">
+        <div class="controls">
+            <h2>Discovery Settings</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:-10px; margin-bottom:20px;">
+                <em><b>1 Click:</b> Include &nbsp;|&nbsp; <b>2 Clicks:</b> Exclude (Red) &nbsp;|&nbsp; <b>CTRL + Drag:</b> Link OR logic</em>
+            </p>
+            
+            <div id="genre-sections"></div>
+
+            <div class="settings-dashboard">
+                <div class="setting-group">
+                    <label class="setting-label">Min Score</label>
+                    <input type="number" id="min-score" class="input-stylish" value="7.0" step="0.1">
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label">Results (Top X)</label>
+                    <input type="number" id="top-x" class="input-stylish" value="10">
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">Global Logic</label>
+                    <select id="logic-mode" class="input-stylish">
+                        <option value="and">AND (All Selected)</option>
+                        <option value="or">OR (Any Selected)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <label class="setting-label">Exclude MyAnimeList?</label>
+                    <label class="switch">
+                        <input type="checkbox" id="exclude-mal" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="summary-panel">
+                <div class="summary-item"><strong id="summary-included">0</strong> included</div>
+                <div class="summary-item"><strong id="summary-excluded">0</strong> excluded</div>
+                <div class="summary-item"><strong id="summary-linked">0</strong> linked groups</div>
+                <button class="btn btn-secondary summary-clear" onclick="resetFilters()">Clear Filters</button>
+            </div>
+
+            <div id="active-filters" class="filter-tag-row"></div>
+
+            <button id="btn-discover" class="btn btn-primary" onclick="fetchRecommendations()">Discover Anime</button>
+        </div>
+        
+        <div id="loader">
+            <div class="spinner"></div>
+            <p>Crunching the numbers...</p>
+        </div>
+
+        <div class="results-toolbar" id="results-toolbar" style="display:none;">
+            <div class="toolbar-left">
+                <div>
+                    <h3 style="margin:0;">Top Matches</h3>
+                    <p id="results-summary" class="toolbar-caption">Search, sort, and explore your recommendations.</p>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-group">
+                    <input id="search-input" class="input-stylish search-input" type="search" placeholder="Search titles or synopsis..." oninput="handleSearchInput()">
+                    <button type="button" class="btn btn-secondary search-clear" onclick="clearSearch()">Clear</button>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="exportResults()">Export JSON</button>
+                <select id="sort-select" class="input-stylish" onchange="sortAndRender()">
+                    <option value="match">Sort by Algorithm Match</option>
+                    <option value="score">Sort by MAL Score</option>
+                    <option value="popularity">Sort by Popularity</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        window.GENRE_MAP = GENRE_MAP_PLACEHOLDER;
+    </script>
+    <script src="/app.js"></script>
+    <div id="settings-btn" class="settings-gear" onclick="toggleModal(true)">⚙️</div>
+
+    <div id="account-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="toggleModal(false)">×</span>
+            <h2 id="modal-title">Authentication</h2>
+            
+            <div id="auth-section">
+                <div class="auth-tabs">
+                    <div id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
+                    <div id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</div>
+                </div>
+                
+                <div class="auth-form-container">
+                    <label class="setting-label">Email Address</label>
+                    <input type="email" id="user-email" class="input-stylish" placeholder="name@example.com">
+                    
+                    <label class="setting-label" style="margin-top:15px;">Password</label>
+                    <input type="password" id="user-pass" class="input-stylish" placeholder="••••••••">
+                    
+                    <div id="register-only-fields" style="display:none; margin-top:15px; padding-top:15px; border-top: 1px dashed #3f3f46;">
+                        <label class="setting-label" style="color:#10b981;">MAL Username (Optional)</label>
+                        <input type="text" id="reg-mal-username" class="input-stylish" placeholder="e.g. KristofPROgamer">
+                        
+                        <label class="setting-label" style="margin-top:15px; color:#10b981;">MAL API Key (Optional)</label>
+                        <input type="password" id="reg-mal-api" class="input-stylish" placeholder="Your API Client ID">
+                    </div>
+
+                    <button id="btn-login-submit" class="btn btn-primary" onclick="login()" style="margin-top:20px;">Secure Login</button>
+                    <button id="btn-register-submit" class="btn btn-primary" onclick="register()" style="margin-top:20px; display:none;">Create Account</button>
+                    
+                    <div id="verify-section" style="margin-top:25px; text-align:center;">
+                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:8px;">Have a verification token?</p>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="verify-token-input" class="input-stylish" placeholder="Paste token here">
+                            <button class="btn btn-primary" onclick="verifyTokenManual()" style="margin-top:0; padding:0.8rem 1rem; width:auto;">Verify</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-section" style="display:none;">
+                <h2 style="margin-top:0;">Account Settings</h2>
+                <div class="user-status">
+                    <span class="status-dot"></span> Logged in as: <strong><span id="logged-in-email"></span></strong>
+                </div>
+                
+                <div style="margin-top: 20px; border-top: 1px solid #3f3f46; padding-top: 20px;">
+                    <label class="setting-label">MAL Username</label>
+                    <input type="text" id="mal-username" class="input-stylish" placeholder="e.g. KristofPROgamer">
+                    
+                    <label class="setting-label" style="margin-top:15px;">MAL API Key</label>
+                    <input type="password" id="mal-api" class="input-stylish" placeholder="Your API Client ID">
+                    
+                    <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:20px;">Save Preferences</button>
+                    <button class="btn btn-danger" onclick="logout()" style="margin-top:10px; width:100%;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

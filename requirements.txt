@@ -1,0 +1,4 @@
+requests>=2.32.5
+urllib3>=2.2.0
+werkzeug>=3.1.7
+python-dotenv>=1.2.2

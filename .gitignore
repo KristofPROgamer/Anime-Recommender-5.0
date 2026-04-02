@@ -1,0 +1,26 @@
+# Python & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Extracted / local runtime DBs
+anime_database.json
+users_db.json
+users_db.json.tmp
+users_db.json.corrupt.*
+*.tmp
+
+# Build and test artifacts
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# OS generated files
+.DS_Store
+Thumbs.db
