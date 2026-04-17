@@ -1,4 +1,4 @@
-# Anime Recommender
+# Anime Recommender Version 1.0
 
 A self-hosted anime discovery engine built on MyAnimeList community data. Configure genre, theme, and demographic filters through an interactive UI; a Bayesian-weighted scoring algorithm ranks results by community engagement, approval rate, and drop-rate penalty — not just raw score.
 
